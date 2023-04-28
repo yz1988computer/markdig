@@ -4,6 +4,7 @@
 
 using Markdig.Helpers;
 using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 
 namespace Markdig.Renderers;
 
@@ -36,7 +37,17 @@ public abstract class MarkdownObjectRenderer<TRenderer, TObject> : IMarkdownObje
             return;
         }
 
-        Write(htmlRenderer, typedObj);
+        if (obj is LinkInline { IsImage: true })
+        {
+            var render = (HtmlRenderer)renderer;
+            render.Write("<div style='text-align:center'>");
+            Write(htmlRenderer, typedObj);
+            render.Write("</div>");
+        }
+        else
+        {
+            Write(htmlRenderer, typedObj);
+        }
     }
 
     private bool TryWrite(TRenderer renderer, TObject obj)
