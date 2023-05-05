@@ -40,9 +40,9 @@ public abstract class MarkdownObjectRenderer<TRenderer, TObject> : IMarkdownObje
         if (obj is LinkInline { IsImage: true })
         {
             var render = (HtmlRenderer)renderer;
-            render.Write("<div style='text-align:center'>");
+            render.Write("<p style='text-align:center'>");
             Write(htmlRenderer, typedObj);
-            render.Write("</div>");
+            render.Write("</p>");
         }
         else
         {

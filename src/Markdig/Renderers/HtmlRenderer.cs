@@ -44,7 +44,7 @@ public class HtmlRenderer : TextRendererBase<HtmlRenderer>
         ObjectRenderers.Add(new EmphasisInlineRenderer());
         ObjectRenderers.Add(new LineBreakInlineRenderer());
         ObjectRenderers.Add(new HtmlInlineRenderer());
-        ObjectRenderers.Add(new HtmlEntityInlineRenderer());            
+        ObjectRenderers.Add(new HtmlEntityInlineRenderer());
         ObjectRenderers.Add(new LinkInlineRenderer());
         ObjectRenderers.Add(new LiteralInlineRenderer());
 
@@ -362,7 +362,8 @@ public class HtmlRenderer : TextRendererBase<HtmlRenderer>
     /// <returns></returns>
     public HtmlRenderer WriteAttributes(MarkdownObject markdownObject)
     {
-        if (markdownObject is null) ThrowHelper.ArgumentNullException_markdownObject();
+        if (markdownObject is null)
+            ThrowHelper.ArgumentNullException_markdownObject();
         return WriteAttributes(markdownObject.TryGetAttributes());
     }
 
@@ -426,7 +427,8 @@ public class HtmlRenderer : TextRendererBase<HtmlRenderer>
     /// <returns>This instance</returns>
     public HtmlRenderer WriteLeafRawLines(LeafBlock leafBlock, bool writeEndOfLines, bool escape, bool softEscape = false)
     {
-        if (leafBlock is null) ThrowHelper.ArgumentNullException_leafBlock();
+        if (leafBlock is null)
+            ThrowHelper.ArgumentNullException_leafBlock();
 
         var slices = leafBlock.Lines.Lines;
         if (slices is not null)
@@ -444,14 +446,27 @@ public class HtmlRenderer : TextRendererBase<HtmlRenderer>
                     WriteLine();
                 }
 
-                ReadOnlySpan<char> span = slice.AsSpan();
-                if (escape)
+                var text = slice.Text.Substring(slice.Start, slice.End - slice.Start + 1);
+                if (!text.StartsWith("<img src="))
                 {
-                    WriteEscape(span, softEscape);
+                    ReadOnlySpan<char> span = slice.AsSpan();
+                    if (escape)
+                    {
+                        WriteEscape(span, softEscape);
+                    }
+                    else
+                    {
+                        Write(span);
+                    }
                 }
                 else
                 {
-                    Write(span);
+                    // 图片居中
+                    var centerDiv = "<p style = 'text-align:center'>";
+                    text = text.Insert(0, centerDiv);
+                    var end = text.IndexOf(">", centerDiv.Length, StringComparison.CurrentCulture);
+                    text = text.Insert(end, "</p");// 暂不清楚哪里会自动增加右尖括号>，所以此处不加
+                    Write(text);
                 }
 
                 if (writeEndOfLines)
